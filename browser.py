@@ -74,6 +74,7 @@ class Browser:
         # Tk는 키가 눌렸을 때 함수가 호출되는 바인딩 제공
         self.window.bind("<Up>", self.scrollup)
         self.window.bind("<Down>", self.scrolldown)
+        self.window.bind("<MouseWheel>", self.on_mousewheel)
 
     def scrollup(self, e):
         if self.scroll - SCROLL_STEP < 0:
@@ -84,6 +85,12 @@ class Browser:
     def scrolldown(self, e):
         self.scroll += SCROLL_STEP
         self.draw()
+
+    def on_mousewheel(self, e):
+        if e.delta > 0:
+            self.scrollup(e)
+        else:
+            self.scrolldown(e)
 
     def draw(self):
         self.canvas.delete('all')
