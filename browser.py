@@ -90,7 +90,7 @@ class Browser:
         for x, y, c in self.display_list:
             if y > self.scroll + HEIGHT:
                 continue
-            if y+VSTEP < self.scroll:
+            if y + VSTEP < self.scroll:
                 continue
             self.canvas.create_text(x, y - self.scroll, text=c)
 
@@ -99,17 +99,6 @@ class Browser:
         text = lex(body)
         self.display_list = layout(text)
         self.draw()
-
-
-def show(body):
-    in_tag = False
-    for c in body:
-        if c == '<':
-            in_tag = True
-        elif c == ">":
-            in_tag = False
-        elif not in_tag:
-            print(c, end="")
 
 
 def lex(body):
@@ -129,6 +118,11 @@ def layout(text):
     display_list = []  # 화면에 그려야 할 요소 집합
     cursor_x, cursor_y = HSTEP, VSTEP
     for c in text:
+        if c in ["\n", "\r"]:
+            cursor_y += VSTEP
+            cursor_x = HSTEP
+            continue
+
         display_list.append((cursor_x, cursor_y, c))
         cursor_x += HSTEP
 
