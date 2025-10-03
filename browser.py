@@ -54,12 +54,12 @@ class URL:
             header, value = line.split(":", 1)
             response_headers[header.casefold()] = value.strip()
 
-            assert "transfer-encoding" not in response_headers
-            assert "content-encoding" not in response_headers
+        assert "transfer-encoding" not in response_headers
+        assert "content-encoding" not in response_headers
 
-            body = response.read()
-            s.close()
-            return body
+        body = response.read()
+        s.close()
+        return body
 
 
 class Browser:
