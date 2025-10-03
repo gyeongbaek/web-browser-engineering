@@ -78,13 +78,19 @@ class Browser:
         self.window.bind("<Configure>", self.on_resize)
 
     def scrollup(self, e):
-        if self.scroll - SCROLL_STEP < 0:
+        step = min(SCROLL_STEP, self.scroll)
+        if step == 0:
             return
-        self.scroll -= SCROLL_STEP
+        self.scroll -= step
         self.draw()
 
     def scrolldown(self, e):
-        self.scroll += SCROLL_STEP
+        max_y = max(y for _, y, _ in self.display_list)
+        max_scroll = max(0, max_y + VSTEP - HEIGHT)
+        step = min(SCROLL_STEP, max_scroll - self.scroll)
+        if step <= 0:
+            return
+        self.scroll += step
         self.draw()
 
     def on_mousewheel(self, e):
@@ -108,6 +114,14 @@ class Browser:
             if y + VSTEP < self.scroll:
                 continue
             self.canvas.create_text(x, y - self.scroll, text=c)
+
+        # 스크롤바 그리기
+        max_y = max(y for _, y, _ in self.display_list)
+        if max_y + VSTEP > HEIGHT:
+            scrollbar_height = (HEIGHT * HEIGHT) / (max_y + VSTEP)
+            scrollbar_top = (self.scroll * HEIGHT) / (max_y + VSTEP)
+            self.canvas.create_rectangle(
+                WIDTH-12, scrollbar_top, WIDTH, scrollbar_top + scrollbar_height, fill="dodgerblue")
 
     def load(self, url):
         body = url.request()
@@ -141,7 +155,7 @@ def layout(text):
         display_list.append((cursor_x, cursor_y, c))
         cursor_x += HSTEP
 
-        if cursor_x > WIDTH - HSTEP:
+        if cursor_x > WIDTH - HSTEP * 2:  # 스크롤바를 위한 여백
             cursor_y += VSTEP
             cursor_x = HSTEP
     return display_list
