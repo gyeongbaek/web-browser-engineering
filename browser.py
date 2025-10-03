@@ -3,6 +3,8 @@ import ssl
 import tkinter
 
 WIDTH, HEIGHT = 800, 600
+HSTEP, VSTEP = 12, 18
+SCROLL_STEP = 100
 
 
 class URL:
@@ -67,24 +69,32 @@ class Browser:
         self.window = tkinter.Tk()
         self.canvas = tkinter.Canvas(self.window, width=WIDTH, height=HEIGHT)
         self.canvas.pack()
+        self.scroll = 0
+
+        # Tk는 키가 눌렸을 때 함수가 호출되는 바인딩 제공
+        self.window.bind("<Up>", self.scrollup)
+        self.window.bind("<Down>", self.scrolldown)
+
+    def scrollup(self, e):
+        if self.scroll - SCROLL_STEP < 0:
+            return
+        self.scroll -= SCROLL_STEP
+        self.draw()
+
+    def scrolldown(self, e):
+        self.scroll += SCROLL_STEP
+        self.draw()
+
+    def draw(self):
+        self.canvas.delete('all')
+        for x, y, c in self.display_list:
+            self.canvas.create_text(x, y - self.scroll, text=c)
 
     def load(self, url):
         body = url.request()
-        # self.canvas.create_rectangle(10, 20, 400, 300)
-        # self.canvas.create_oval(100, 100, 150, 150)
-        # self.canvas.create_text(200, 150, text="HI")
-
-        HSTEP, VSTEP = 12, 18
-        cursor_x, cursor_y = HSTEP, VSTEP
-
         text = lex(body)
-        for c in text:
-            self.canvas.create_text(cursor_x, cursor_y, text=c)
-            cursor_x += HSTEP
-
-            if cursor_x >= WIDTH - HSTEP:
-                cursor_y += VSTEP
-                cursor_x = HSTEP
+        self.display_list = layout(text)
+        self.draw()
 
 
 def show(body):
@@ -109,6 +119,19 @@ def lex(body):
         elif not in_tag:
             text += c
     return text
+
+
+def layout(text):
+    display_list = []  # 화면에 그려야 할 요소 집합
+    cursor_x, cursor_y = HSTEP, VSTEP
+    for c in text:
+        display_list.append((cursor_x, cursor_y, c))
+        cursor_x += HSTEP
+
+        if cursor_x > WIDTH - HSTEP:
+            cursor_y += VSTEP
+            cursor_x = HSTEP
+    return display_list
 
 
 if __name__ == "__main__":
