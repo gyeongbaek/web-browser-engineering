@@ -68,13 +68,14 @@ class Browser:
     def __init__(self):
         self.window = tkinter.Tk()
         self.canvas = tkinter.Canvas(self.window, width=WIDTH, height=HEIGHT)
-        self.canvas.pack()
+        self.canvas.pack(fill="both", expand=True)
         self.scroll = 0
 
         # Tk는 키가 눌렸을 때 함수가 호출되는 바인딩 제공
         self.window.bind("<Up>", self.scrollup)
         self.window.bind("<Down>", self.scrolldown)
         self.window.bind("<MouseWheel>", self.on_mousewheel)
+        self.window.bind("<Configure>", self.on_resize)
 
     def scrollup(self, e):
         if self.scroll - SCROLL_STEP < 0:
@@ -92,6 +93,13 @@ class Browser:
         else:
             self.scrolldown(e)
 
+    def on_resize(self, e):
+        global WIDTH, HEIGHT
+        WIDTH = e.width
+        HEIGHT = e.height
+        self.display_list = layout(self.text)
+        self.draw()
+
     def draw(self):
         self.canvas.delete('all')
         for x, y, c in self.display_list:
@@ -103,8 +111,8 @@ class Browser:
 
     def load(self, url):
         body = url.request()
-        text = lex(body)
-        self.display_list = layout(text)
+        self.text = lex(body)
+        self.display_list = layout(self.text)
         self.draw()
 
 
